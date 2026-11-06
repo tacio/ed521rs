@@ -1,0 +1,4 @@
+# Stable-only subset of rust-bitcoin's rustfmt.toml (its import grouping options need nightly).
+max_width = 100
+use_small_heuristics = "Max"
+newline_style = "Unix"

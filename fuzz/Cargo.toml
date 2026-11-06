@@ -1,0 +1,40 @@
+[package]
+name = "ed521-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+license = "MIT"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+ed521 = { path = "../crates/ed521", features = ["__hazmat-sign", "batch"] }
+libfuzzer-sys = "0.4"
+num-bigint = "0.5"
+num-traits = "0.2"
+shake = "0.1"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "verify"
+path = "fuzz_targets/verify.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode"
+path = "fuzz_targets/decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "batch"
+path = "fuzz_targets/batch.rs"
+test = false
+doc = false
+bench = false

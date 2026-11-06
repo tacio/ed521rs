@@ -1,0 +1,10 @@
+target/
+/fuzz/target
+/fuzz/corpus
+/fuzz/artifacts
+/.venv
+__pycache__/
+*.so
+/dist
+/fuzz/coverage
+/tse-sources

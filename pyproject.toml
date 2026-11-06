@@ -1,0 +1,67 @@
+[build-system]
+requires = ["maturin>=1.15,<2"]
+build-backend = "maturin"
+
+[project]
+name = "ed521rs"
+dynamic = ["version"]
+description = "Fast Ed521 (EdDSA over E-521, ICP-Brasil DOC-ICP-01.01) signature verification, in Rust"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Tacio Medeiros" }]
+keywords = ["ed521", "eddsa", "e-521", "signature", "verification", "icp-brasil", "tse"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "Topic :: Security :: Cryptography",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Repository = "https://github.com/tacio/ed521rs"
+Issues = "https://github.com/tacio/ed521rs/issues"
+Changelog = "https://github.com/tacio/ed521rs/blob/main/CHANGELOG.md"
+Benchmarks = "https://github.com/tacio/ed521rs/blob/main/BENCHMARKS.md"
+"Rust crate" = "https://crates.io/crates/ed521"
+
+[dependency-groups]
+dev = [
+    "maturin==1.15.0",
+    "ruff==0.17.0",
+]
+# TSE's reference verifier pins this exact ECPy commit (requirements.txt of its 2026 format
+# package). Installed separately, as an oracle for the edge-case and parity tests.
+# scripts/tse_vectors.py extract: TSE's ASN.1 specifications are compiled with asn1tools.
+tse = [
+    "asn1tools==0.167.0",
+]
+oracle = [
+    "ecpy @ git+https://github.com/cslashm/ECPy.git@8143d9ac017de0cb7f980bedaf56cefe6b4d9180",
+]
+
+[tool.maturin]
+manifest-path = "crates/ed521-py/Cargo.toml"
+python-source = "python"
+module-name = "ed521rs._native"
+features = ["pyo3/extension-module"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

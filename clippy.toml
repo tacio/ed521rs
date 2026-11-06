@@ -1,0 +1,2 @@
+msrv = "1.87.0"
+doc-valid-idents = ["SHAKE256", "PureEdDSA", "ECPy", "EdDSA", "PureEdDSA", "UE2020", "UE2022", "Ed521", "E-521", "ICP-Brasil", ".."]
