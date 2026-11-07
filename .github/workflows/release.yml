@@ -16,7 +16,7 @@ jobs:
   check-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Tag matches the workspace version
         if: github.event_name == 'push'
         run: |
@@ -41,7 +41,7 @@ jobs:
           - { name: windows-arm64, runner: windows-11-arm, target: aarch64 }
     runs-on: ${{ matrix.platform.runner }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         if: runner.os != 'Linux'
         with:
@@ -60,7 +60,7 @@ jobs:
     needs: check-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: PyO3/maturin-action@v1
         with:
           command: sdist
@@ -79,7 +79,7 @@ jobs:
         python: ["3.11", "3.14"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           pattern: wheel-*
@@ -120,7 +120,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       # crates.io accepts trusted publishing only for crates that already exist, so the first
       # release is published by hand (RELEASING.md); this job then finds it and stops.
       - name: Skip a version that is already on crates.io
