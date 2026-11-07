@@ -1,0 +1,3 @@
+# Check out LF everywhere, Windows included: tests pin the bytes of vendored and generated files
+# (tests/python/reference_ed521.py, the JSON vectors, generated Rust), and CRLF would change them.
+* text=auto eol=lf
