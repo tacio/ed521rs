@@ -1,0 +1,49 @@
+name: Bug report
+description: Something fails, crashes or behaves differently from the docs.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Wrong verdicts are security issues.** If ed521rs accepts an invalid signature, rejects a valid
+        one or disagrees with TSE's reference verifier, use
+        [private vulnerability reporting](https://github.com/tacio/ed521rs/security/advisories/new) instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproducer
+      description: A minimal script or test, with the key, signature and message in hex if relevant.
+      render: python
+    validations:
+      required: true
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - Python (ed521rs)
+        - Rust (ed521)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version and backend
+      description: "Python: `ed521rs.__version__` and `ed521rs.backend()`. Rust: crate version and features."
+      placeholder: 0.1.0, avx2
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: Ubuntu 24.04 x86_64, Python 3.13
+    validations:
+      required: true
