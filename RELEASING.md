@@ -44,12 +44,16 @@ version. Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`, which does
    it from there.
 2. Move the *Unreleased* notes in `CHANGELOG.md` under a `## [X.Y.Z]` heading. The release
    workflow copies that section into the release notes and fails if it is missing.
-3. Run `just check`, plus `just tse-fetch` and `just tse-vectors` if the vectors changed.
-4. Commit, then tag and push:
+3. Run `just check`, plus `just tse-fetch` and `just tse-vectors` if the vectors changed. Then
+   run `just fuzz` (10 minutes per target by default) and fix anything it finds before tagging.
+   CI doesn't fuzz, so this is the release's dynamic-analysis step.
+4. Commit on a branch and open a pull request (`main` accepts changes only through PRs with
+   green CI). Once it's merged, tag the merge commit and push the tag:
 
    ```sh
+   git switch main && git pull --ff-only
    git tag -s vX.Y.Z -m "ed521rs X.Y.Z"
-   git push origin main vX.Y.Z
+   git push origin vX.Y.Z
    ```
 
    For the first release, run `cargo publish -p ed521` before pushing the tag.
