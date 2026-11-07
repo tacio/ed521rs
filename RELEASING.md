@@ -7,7 +7,8 @@ version. Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`, which does
    and Apple silicon) and Windows (x64 and ARM64), plus the sdist;
 2. installs the wheels on Linux, macOS and Windows and runs the Python test suite against them;
 3. publishes to PyPI and crates.io through trusted publishing (no stored tokens);
-4. drafts a GitHub release with the built files attached.
+4. attests build provenance for the wheels and the sdist, and drafts a GitHub release with them
+   attached and the version's `CHANGELOG.md` section as its notes.
 
 ## One-time setup
 
@@ -41,7 +42,8 @@ version. Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`, which does
 
 1. Set the version in the root `Cargo.toml` (`[workspace.package]`). The Python package reads
    it from there.
-2. Move the *Unreleased* notes in `CHANGELOG.md` under the new version.
+2. Move the *Unreleased* notes in `CHANGELOG.md` under a `## [X.Y.Z]` heading. The release
+   workflow copies that section into the release notes and fails if it is missing.
 3. Run `just check`, plus `just tse-fetch` and `just tse-vectors` if the vectors changed.
 4. Commit, then tag and push:
 
