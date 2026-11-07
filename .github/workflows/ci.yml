@@ -64,7 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@1.87
+      # The toolchain input (not the action's ref) names the MSRV, so Dependabot leaves it alone.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.87"
       - uses: Swatinem/rust-cache@v2
       # The dev-dependencies need a newer compiler, so the MSRV check builds the library only.
       - run: cargo build -p ed521 --all-features
