@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: If you use ed521rs in an audit or in research, please cite it as below.
+title: "ed521rs: fast Ed521 signature verification"
+abstract: >-
+  Fast verification of Ed521 signatures (EdDSA over the Edwards curve E-521, ICP-Brasil
+  DOC-ICP-01.01) in Rust, with Python bindings, built for auditing the files signed by
+  Brazil's TSE voting machines.
+type: software
+authors:
+  - family-names: Medeiros
+    given-names: Tacio
+repository-code: https://github.com/tacio/ed521rs
+url: https://docs.rs/ed521
+license: MIT
+version: 0.1.0
+date-released: 2026-11-07
+keywords:
+  - ed521
+  - eddsa
+  - e-521
+  - digital signature
+  - election audit
+  - icp-brasil

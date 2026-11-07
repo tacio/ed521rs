@@ -40,6 +40,21 @@ jobs:
           python3 -I scripts/gen_tables.py --check
           python3 -I scripts/gen_avx2_kernels.py --check
 
+  deny:
+    name: cargo-deny (${{ matrix.checks }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        checks: [advisories, bans licenses sources]
+    # A new advisory against a dependency should not block unrelated pull requests.
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check ${{ matrix.checks }}
+
   test:
     name: test (${{ matrix.os }})
     strategy:

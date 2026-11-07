@@ -1,9 +1,15 @@
-# ed521rs
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tacio/ed521rs/main/docs/assets/banner-dark.svg">
+  <img alt="ed521rs: fast Ed521 signature verification in Rust and Python" src="https://raw.githubusercontent.com/tacio/ed521rs/main/docs/assets/banner-light.svg" width="100%">
+</picture>
 
 [![CI](https://github.com/tacio/ed521rs/actions/workflows/ci.yml/badge.svg)](https://github.com/tacio/ed521rs/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/ed521rs.svg)](https://pypi.org/project/ed521rs/)
+[![Python](https://img.shields.io/pypi/pyversions/ed521rs.svg)](https://pypi.org/project/ed521rs/)
 [![crates.io](https://img.shields.io/crates/v/ed521.svg)](https://crates.io/crates/ed521)
+[![MSRV](https://img.shields.io/crates/msrv/ed521.svg)](https://crates.io/crates/ed521)
 [![docs.rs](https://img.shields.io/docsrs/ed521)](https://docs.rs/ed521)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/tacio/ed521rs/badge)](https://scorecard.dev/viewer/?uri=github.com/tacio/ed521rs)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/tacio/ed521rs/blob/main/LICENSE)
 
 Fast verification of **Ed521** signatures (EdDSA over the Edwards curve E-521, specified by

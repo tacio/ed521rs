@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability or wrong verdict
+    url: https://github.com/tacio/ed521rs/security/advisories/new
+    about: Accepting an invalid signature or rejecting a valid one is a security issue. Report it privately.
