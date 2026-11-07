@@ -16,7 +16,7 @@ jobs:
   check-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Tag matches the workspace version
         if: github.event_name == 'push'
         run: |
@@ -41,8 +41,8 @@ jobs:
           - { name: windows-arm64, runner: windows-11-arm, target: aarch64 }
     runs-on: ${{ matrix.platform.runner }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         if: runner.os != 'Linux'
         with:
           python-version: "3.11"
@@ -51,7 +51,7 @@ jobs:
           target: ${{ matrix.platform.target }}
           manylinux: ${{ matrix.platform.manylinux || 'auto' }}
           args: --release --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-${{ matrix.platform.name }}
           path: dist
@@ -60,12 +60,12 @@ jobs:
     needs: check-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: PyO3/maturin-action@v1
         with:
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist
@@ -79,13 +79,13 @@ jobs:
         python: ["3.11", "3.14"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheel-*
           path: dist
           merge-multiple: true
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - name: Install the wheel and run the test suite against it
         shell: bash
         run: |
@@ -104,7 +104,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -120,7 +120,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       # crates.io accepts trusted publishing only for crates that already exist, so the first
       # release is published by hand (RELEASING.md); this job then finds it and stops.
       - name: Skip a version that is already on crates.io
@@ -146,7 +146,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
