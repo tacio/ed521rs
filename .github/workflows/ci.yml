@@ -21,7 +21,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -32,7 +32,7 @@ jobs:
         run: cargo doc -p ed521 --all-features --no-deps
         env:
           RUSTDOCFLAGS: -D warnings
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - run: uvx ruff@0.17.0 check scripts tests/python python
       - run: uvx ruff@0.17.0 format --check scripts tests/python python
       - name: Generated code is up to date
@@ -48,7 +48,7 @@ jobs:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo test -p ed521 --all-features
@@ -63,7 +63,7 @@ jobs:
   msrv:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       # The toolchain input (not the action's ref) names the MSRV, so Dependabot leaves it alone.
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -84,10 +84,10 @@ jobs:
     env:
       UV_PYTHON: ${{ matrix.python }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       # Builds the extension (release) into .venv, with ECPy as the third oracle.
       - run: uv sync --group oracle
       - run: uv run --no-sync python -m unittest discover -s tests/python -v
@@ -98,9 +98,9 @@ jobs:
   package:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo publish -p ed521 --dry-run
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - run: uvx maturin@1.15.0 sdist --out dist
