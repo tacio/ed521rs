@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.platform.runner }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         if: runner.os != 'Linux'
         with:
           python-version: "3.11"
