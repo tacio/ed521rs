@@ -12,7 +12,7 @@ You need a stable Rust toolchain, [uv](https://docs.astral.sh/uv/) and
 [just](https://github.com/casey/just).
 
 ```sh
-just setup      # .venv with maturin, ruff and the ECPy oracle
+just setup      # .venv with maturin, ruff, ty and the ECPy oracle
 just check      # everything CI runs: lint, tests, no_std, MSRV, vectors, Python suite
 ```
 
@@ -20,7 +20,7 @@ Individual recipes (`just --list` shows them all):
 
 | Recipe | What it does |
 |---|---|
-| `just fmt` / `just lint` | rustfmt, clippy and ruff |
+| `just fmt` / `just lint` | rustfmt, clippy, ruff and the ty type checker |
 | `just test` | Rust tests on the default and serial backends, and `no_std` |
 | `just py-test` | build the extension into `.venv` and run the Python suite |
 | `just vectors` | regenerate tables, AVX2 kernels and edge cases; fail if anything changed |
@@ -34,6 +34,9 @@ Individual recipes (`just --list` shows them all):
   `Mode::EcpyCompat`.
 - **Generated code is generated.** Don't edit the field tables or AVX2 kernels by hand. Change
   `scripts/gen_tables.py` or `scripts/gen_avx2_kernels.py` and regenerate.
+- **Python is fully annotated.** ruff requires annotations on every function in `scripts/`
+  and `tests/python/`, and ty must pass (`just lint`). The vendored `reference_ed521.py` is
+  the one exception: it is a hash-pinned copy and stays verbatim.
 - **No new `unsafe`** outside the AVX2 dispatch. Each `unsafe` block carries a `SAFETY` comment.
 - **Performance claims come with numbers.** Include before/after `just bench` output for the
   affected benchmarks.

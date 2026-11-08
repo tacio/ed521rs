@@ -18,6 +18,7 @@ import argparse
 import hashlib
 import json
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -29,11 +30,15 @@ import reference_ed521 as ref  # noqa: E402
 
 P, L, D = ref.P, ref.L, ref.D
 IDENTITY = ref._IDENTITY
-ORDER_2 = (0, P - 1, 1, 0)  # (0, -1)
-ORDER_4 = (1, 0, 1, 0)  # (1, 0), x odd
+Point = tuple[int, int, int, int]  # extended coordinates (X, Y, Z, T)
+# id, key, signature, message, strict reason code, note
+Case = tuple[str, bytes, bytes, bytes, str, str]
+
+ORDER_2: Point = (0, P - 1, 1, 0)  # (0, -1)
+ORDER_4: Point = (1, 0, 1, 0)  # (1, 0), x odd
 
 
-def ecpy_verify(key, signature, message):
+def ecpy_verify(key: bytes, signature: bytes, message: bytes) -> tuple[bool, str | None]:
     """ECPy's verdict and the exception it raised, if any."""
     from ecpy.curves import Curve
     from ecpy.eddsa import EDDSA
@@ -50,40 +55,40 @@ def ecpy_verify(key, signature, message):
         return False, type(error).__name__
 
 
-def mul(k, point):
+def mul(k: int, point: Point) -> Point:
     return ref._multiply(k, point)
 
 
-def add(p, q):
+def add(p: Point, q: Point) -> Point:
     return ref._add(p, q)
 
 
-def affine(point):
+def affine(point: Point) -> tuple[int, int]:
     inverse = pow(point[2], -1, P)
     return point[0] * inverse % P, point[1] * inverse % P
 
 
-def raw(y, sign):
+def raw(y: int, sign: int) -> bytes:
     """A 66-byte point encoding with any 527-bit y."""
     assert 0 <= y < 1 << 527
     return (y | sign << 527).to_bytes(66, "little")
 
 
-def enc(point, extra_p=0, sign=None):
+def enc(point: Point, extra_p: int = 0, sign: int | None = None) -> bytes:
     """Encoding of ``point``, optionally with y + extra_p * p or a forced sign bit."""
     x, y = affine(point)
     return raw(y + extra_p * P, x & 1 if sign is None else sign)
 
 
-def challenge(r, a, message):
+def challenge(r: bytes, a: bytes, message: bytes) -> int:
     return ref._h(r + a + message) % L
 
 
-def scalar_bytes(s):
+def scalar_bytes(s: int) -> bytes:
     return s.to_bytes(66, "little")
 
 
-def grind(r, a, label, condition):
+def grind(r: bytes, a: bytes, label: str, condition: Callable[[int], bool]) -> tuple[bytes, int]:
     """The first message ``label/i`` whose challenge satisfies ``condition``."""
     i = 0
     while True:
@@ -94,7 +99,7 @@ def grind(r, a, label, condition):
         i += 1
 
 
-def cofactored(key, signature, message):
+def cofactored(key: bytes, signature: bytes, message: bytes) -> bool | None:
     a, r = ref.decode(key), ref.decode(signature[:66])
     s = int.from_bytes(signature[66:], "little")
     if a is None or r is None or s >= L:
@@ -105,27 +110,31 @@ def cofactored(key, signature, message):
     return ref._equal(left, right)
 
 
-def not_on_curve_y():
+def not_on_curve_y() -> int:
     y = 2
     while pow((1 - y * y) * pow(1 - D * y * y, -1, P) % P, (P - 1) // 2, P) != P - 1:
         y += 1
     return y
 
 
-def cases():
+def cases() -> list[Case]:
     secret = int.from_bytes(hashlib.shake_256(b"ed521rs edge cases").digest(66), "little") % L
     nonce = int.from_bytes(hashlib.shake_256(b"ed521rs edge nonce").digest(66), "little") % L
     a_point, r_point = mul(secret, ref.BASE), mul(nonce, ref.BASE)
     key, r = enc(a_point), enc(r_point)
     max_p = ((1 << 527) - 1 - affine(r_point)[1]) // P  # largest k with y + k p < 2^527
 
-    def signed(r_bytes, key_bytes, message, a=secret, n=nonce):
+    def signed(
+        r_bytes: bytes, key_bytes: bytes, message: bytes, a: int = secret, n: int = nonce
+    ) -> bytes:
         s = (n + challenge(r_bytes, key_bytes, message) * a) % L
         return r_bytes + scalar_bytes(s)
 
-    out = []
+    out: list[Case] = []
 
-    def case(id_, key_bytes, signature, message, reason, note):
+    def case(
+        id_: str, key_bytes: bytes, signature: bytes, message: bytes, reason: str, note: str
+    ) -> None:
         out.append((id_, key_bytes, signature, message, reason, note))
 
     message = b"edge-case baseline"
@@ -418,8 +427,8 @@ def cases():
     return out
 
 
-def render():
-    vectors = []
+def render() -> str:
+    vectors: list[dict[str, object]] = []
     for id_, key, signature, message, reason, note in cases():
         strict = ref.verify(key, signature, message)
         assert strict == (reason == "ok"), (id_, strict, reason)
@@ -451,7 +460,7 @@ def render():
     return json.dumps(document, indent=1) + "\n"
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)

@@ -6,7 +6,7 @@ export PYO3_PYTHON := justfile_directory() / ".venv/bin/python"
 _default:
     @just --list
 
-# Create the Python dev environment (maturin, ruff, asn1tools and the ECPy oracle).
+# Create the Python dev environment (maturin, ruff, ty, asn1tools and the ECPy oracle).
 setup:
     uv venv --python 3.14 .venv
     uv pip install --python {{python}} --group dev --group tse --group oracle
@@ -19,6 +19,7 @@ lint:
     cargo fmt --all --check
     cargo clippy --workspace --all-targets --all-features -- -D warnings
     .venv/bin/ruff check scripts tests/python python
+    .venv/bin/ty check
 
 test:
     cargo test --workspace --all-features

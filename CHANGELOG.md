@@ -5,6 +5,11 @@ All notable changes are recorded here. The project follows [Semantic Versioning]
 
 ## [Unreleased]
 
+### Python (`ed521rs`)
+
+- The type stubs now accept `bytearray` elements in the lists passed to `verify_many`,
+  `reason_many` and both `verify_batch` functions, as the extension always has.
+
 ## [0.1.0]
 
 First release.

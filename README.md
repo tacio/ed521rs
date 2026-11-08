@@ -167,7 +167,7 @@ Development needs [just], [uv] and a Rust toolchain; MSRV checks also need Rust 
 fuzzing needs nightly.
 
 ```sh
-just setup      # .venv with maturin, ruff, asn1tools and the ECPy oracle
+just setup      # .venv with maturin, ruff, ty, asn1tools and the ECPy oracle
 just check      # format, clippy, Rust tests (both backends, no_std, MSRV), vectors, Python tests
 just bench      # criterion; `python scripts/bench.py` times the Python entry points
 just fuzz 600   # differential fuzzing, 10 minutes per target
