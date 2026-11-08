@@ -5,8 +5,17 @@ All notable changes are recorded here. The project follows [Semantic Versioning]
 
 ## [Unreleased]
 
+## [0.1.1]
+
+### Rust (`ed521`)
+
+- `VerifyingKey` implements `PartialEq`, `Eq` and `Hash`: keys are equal when decoded from the
+  same 66 bytes in the same mode, so a `HashMap` can cache one `PrecomputedVerifyingKey` per key.
+
 ### Python (`ed521rs`)
 
+- `VerifyingKey` supports `==` and `hash()` on the same terms. A precomputed key equals the
+  plain key with the same bytes and mode, so a dict can cache one precomputed key per urn key.
 - The type stubs now accept `bytearray` elements in the lists passed to `verify_many`,
   `reason_many` and both `verify_batch` functions, as the extension always has.
 
@@ -33,5 +42,6 @@ First release.
 - abi3 wheels for CPython 3.11 and later (one wheel per platform).
 
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/tacio/ed521rs/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/tacio/ed521rs/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/tacio/ed521rs/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tacio/ed521rs/releases/tag/v0.1.0

@@ -79,6 +79,10 @@ impl Signature {
 }
 
 /// A decoded Ed521 public key, together with the mode it was decoded in.
+///
+/// Two keys are equal (and hash alike) when they were decoded from the same 66 bytes in the same
+/// mode. In [`Mode::EcpyCompat`], two different encodings of one point are different keys: the
+/// encoding enters the challenge hash, so they verify different signatures.
 #[derive(Clone, Copy, Debug)]
 pub struct VerifyingKey {
     /// −A: verification computes `[S]B + [k](−A)` and compares it with R.
@@ -87,6 +91,22 @@ pub struct VerifyingKey {
     pub(crate) mode: Mode,
     /// `[4]A = O`, recorded in [`Mode::EcpyCompat`] only (see [`Mode`]).
     pub(crate) ecpy_small_order: bool,
+}
+
+// The other fields are computed from the encoding and the mode, so these two decide equality.
+impl PartialEq for VerifyingKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.bytes == other.bytes && self.mode == other.mode
+    }
+}
+
+impl Eq for VerifyingKey {}
+
+impl core::hash::Hash for VerifyingKey {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        self.bytes.hash(state);
+        self.mode.hash(state);
+    }
 }
 
 impl VerifyingKey {

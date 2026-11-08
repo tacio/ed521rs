@@ -7,6 +7,7 @@
 #![allow(clippy::needless_pass_by_value)] // PyO3 extracts arguments as owned values
 
 use std::borrow::Cow;
+use std::hash::{Hash, Hasher};
 use std::num::NonZeroUsize;
 use std::ops::Deref;
 use std::thread;
@@ -305,6 +306,18 @@ impl VerifyingKey {
             )
         });
         Ok(results.into_iter().map(|r| r.is_ok()).collect())
+    }
+
+    /// Keys are equal when decoded from the same bytes in the same mode; precomputation, a
+    /// speed-up only, doesn't count.
+    fn __eq__(&self, other: PyRef<'_, Self>) -> bool {
+        self.verifier.key() == other.verifier.key()
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = std::hash::DefaultHasher::new();
+        self.verifier.key().hash(&mut hasher);
+        hasher.finish()
     }
 
     fn __repr__(&self) -> String {

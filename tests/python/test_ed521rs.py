@@ -144,6 +144,22 @@ class ApiTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "non_canonical_public_key"):
             ed521rs.VerifyingKey(b"\xff" * 65 + b"\x01", precompute=True)
 
+    def test_key_equality_and_hash(self) -> None:
+        """Equal bytes and mode make equal keys; precompute doesn't count."""
+        key_bytes = self.vectors[0][1]
+        plain = ed521rs.VerifyingKey(key_bytes)
+        precomputed = ed521rs.VerifyingKey(bytearray(key_bytes), precompute=True)
+        ecpy = ed521rs.VerifyingKey(key_bytes, mode="ecpy")
+        other = ed521rs.VerifyingKey(load("tse-2026.json")[-1][1])
+        self.assertEqual(plain, precomputed)
+        self.assertEqual(hash(plain), hash(precomputed))
+        self.assertFalse(plain != precomputed)
+        self.assertNotEqual(plain, ecpy)
+        self.assertNotEqual(plain, other)
+        self.assertNotEqual(plain, key_bytes)
+        self.assertEqual(len({plain, precomputed, ecpy, other}), 3)
+        self.assertEqual({plain: "cached"}[precomputed], "cached")
+
     def test_reason_many_on_edge_cases(self) -> None:
         """Mixed failures through the batched paths, for both key types and both modes."""
         document = json.loads((VECTORS / "edge-cases.json").read_text())
