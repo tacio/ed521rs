@@ -258,7 +258,7 @@ dependencies = [
 
 [[package]]
 name = "ed521"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cpufeatures",
  "criterion",
@@ -272,7 +272,7 @@ dependencies = [
 
 [[package]]
 name = "ed521-py"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ed521",
  "pyo3",

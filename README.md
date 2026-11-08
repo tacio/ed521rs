@@ -59,6 +59,8 @@ if not key.verify_batch(signatures, messages):
 - **Threads and the GIL.**
   - Every call releases the GIL.
   - `threads` (default 1) caps the threads one call may use.
+- **Hashable keys.** Keys compare and hash by their bytes and mode (precomputed or not), so a
+  dict can cache one precomputed key per distinct key.
 - **Input types.** Arguments accept `bytes`, `bytearray`, `memoryview` or any other buffer.
 - **Reason codes.** They are stable strings (`non_canonical_r`, `s_out_of_range`,
   `invalid_signature`, ...), suitable for audit status columns.

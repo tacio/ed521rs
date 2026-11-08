@@ -180,3 +180,38 @@ fn verify_many_matches_verify() {
         }
     }
 }
+
+#[test]
+fn keys_compare_by_encoding_and_mode() {
+    use std::collections::HashSet;
+    let vectors = all();
+    let mut keys = HashSet::new();
+    for v in &vectors {
+        for mode in [Mode::Strict, Mode::EcpyCompat] {
+            let key = VerifyingKey::from_slice(&v.key, mode).unwrap();
+            assert_eq!(key, VerifyingKey::from_slice(&v.key, mode).unwrap());
+            keys.insert(key);
+        }
+    }
+    let distinct: HashSet<&[u8]> = vectors.iter().map(|v| &v.key[..]).collect();
+    assert!(distinct.len() > 1);
+    assert_eq!(keys.len(), 2 * distinct.len());
+    let key = &vectors[0].key;
+    assert_ne!(
+        VerifyingKey::from_slice(key, Mode::Strict).unwrap(),
+        VerifyingKey::from_slice(key, Mode::EcpyCompat).unwrap()
+    );
+    // In EcpyCompat, y + p decodes to the same point, but it is a different key: the encoding
+    // enters the challenge hash.
+    let path = format!("{}/tests/vectors/edge-cases.json", env!("CARGO_MANIFEST_DIR"));
+    let document: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    let key_of = |id: &str| {
+        let v = document["vectors"].as_array().unwrap().iter().find(|v| v["id"] == id).unwrap();
+        VerifyingKey::from_slice(
+            &hex::decode(v["key"].as_str().unwrap()).unwrap(),
+            Mode::EcpyCompat,
+        )
+        .unwrap()
+    };
+    assert_ne!(key_of("baseline"), key_of("key-y-plus-p"));
+}
