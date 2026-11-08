@@ -8,7 +8,8 @@ version. Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`, which does
 2. installs the wheels on Linux, macOS and Windows and runs the Python test suite against them;
 3. publishes to PyPI and crates.io through trusted publishing (no stored tokens);
 4. attests build provenance for the wheels and the sdist, and drafts a GitHub release with them
-   attached and the version's `CHANGELOG.md` section as its notes.
+   and the attestation's Sigstore bundle (`ed521rs-X.Y.Z.sigstore.json`) attached, and the
+   version's `CHANGELOG.md` section as its notes.
 
 ## One-time setup
 

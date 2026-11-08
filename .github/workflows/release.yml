@@ -155,9 +155,16 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Attest build provenance for the wheels and the sdist
+        id: attest
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
         with:
           subject-path: dist/*
+      # The attestation also lives in GitHub's attestation store; a release asset lets anyone
+      # verify offline (gh attestation verify --bundle) and is what OpenSSF Scorecard looks for.
+      - name: Attach the Sigstore bundle to the release
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: cp "$BUNDLE" "dist/ed521rs-${GITHUB_REF_NAME#v}.sigstore.json"
       - name: Release notes from CHANGELOG.md
         run: |
           version=${GITHUB_REF_NAME#v}
