@@ -42,6 +42,7 @@ Benchmarks = "https://github.com/tacio/ed521rs/blob/main/BENCHMARKS.md"
 dev = [
     "maturin==1.15.0",
     "ruff==0.17.0",
+    "ty==0.0.94",
 ]
 # TSE's reference verifier pins this exact ECPy commit (requirements.txt of its 2026 format
 # package). Installed separately, as an oracle for the edge-case and parity tests.
@@ -64,4 +65,19 @@ target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I"]
+select = ["E4", "E7", "E9", "F", "I", "ANN"]
+
+[tool.ruff.lint.per-file-ignores]
+# Verbatim, hash-pinned copy of election_audit/ed521.py: it stays unannotated.
+"tests/python/reference_ed521.py" = ["ANN"]
+
+[tool.ty.environment]
+python-version = "3.11"
+# The package source (with its _native.pyi stub, so no build is needed) and the vendored reference.
+extra-paths = ["python", "tests/python"]
+
+[tool.ty.src]
+include = ["scripts", "tests/python", "python"]
+
+[tool.ty.terminal]
+error-on-warning = true

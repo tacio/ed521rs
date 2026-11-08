@@ -19,13 +19,14 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "crates/ed521/tests/vectors/ecpy.json"
 ECPY_COMMIT = "8143d9ac017de0cb7f980bedaf56cefe6b4d9180"
 
 
-def literal(node):
+def literal(node: ast.expr) -> Any:  # noqa: ANN401 (an int, bytes or str constant)
     """Value of int(0x...), 0x..., b'...' or int(...).to_bytes(n, 'big'); None otherwise."""
     if isinstance(node, ast.Constant):
         return node.value
@@ -34,9 +35,10 @@ def literal(node):
     return None
 
 
-def ed521_blocks(source):
+def ed521_blocks(source: str) -> list[dict[str, Any]]:
     """Assignments following each ``Curve.get_curve('Ed521')`` up to the next get_curve."""
-    blocks, current = [], None
+    blocks: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
     for node in ast.walk(ast.parse(source)):
         body = getattr(node, "body", None)
         if not isinstance(body, list):
@@ -63,7 +65,7 @@ def ed521_blocks(source):
     return blocks
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--ecpy-eddsa", type=Path, required=True)
     parser.add_argument("--check", action="store_true")
@@ -75,7 +77,7 @@ def main(argv=None):
     blocks = ed521_blocks(raw.decode())
     assert len(blocks) == 2, f"expected 2 Ed521 vectors, found {len(blocks)}"
 
-    def encode(x, y):
+    def encode(x: int, y: int) -> bytes:
         return (y | (x & 1) << 527).to_bytes(66, "little")
 
     vectors = []

@@ -35,6 +35,7 @@ import sys
 import urllib.request
 import zipfile
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCES_DIR = ROOT / "tse-sources"
@@ -94,17 +95,17 @@ CA_SHA256 = {
 }
 
 
-def sha256(raw):
+def sha256(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def get(url):
+def get(url: str) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=60) as response:
         return response.read()
 
 
-def section_url(name):
+def section_url(name: str) -> str:
     """The official URL of one section file, from the section's auxiliary file."""
     stem = name.split("-")[0]
     municipality, zone, section = SECTIONS[stem]
@@ -118,14 +119,14 @@ def section_url(name):
     raise SystemExit(f"{directory}: {name} is not listed")
 
 
-def source_url(name):
+def source_url(name: str) -> str:
     origin, _ = SOURCES[name]
     return section_url(name) if origin == "section" else origin
 
 
-def fetch(args):
+def fetch(args: argparse.Namespace) -> None:
     SOURCES_DIR.mkdir(exist_ok=True)
-    missing = []
+    missing: list[tuple[str, str]] = []
     for name, (origin, digest) in SOURCES.items():
         target = SOURCES_DIR / name
         if target.exists() and sha256(target.read_bytes()) == digest:
@@ -163,7 +164,7 @@ def fetch(args):
 # Minimal DER reading: enough to cut certificates and revocation lists into their parts.
 
 
-def tlv(der, offset):
+def tlv(der: bytes, offset: int) -> tuple[int, int, int]:
     """(tag, content start, end) of the DER element at ``offset``."""
     tag, length = der[offset], der[offset + 1]
     start = offset + 2
@@ -174,7 +175,7 @@ def tlv(der, offset):
     return tag, start, start + length
 
 
-def signed_parts(der):
+def signed_parts(der: bytes) -> tuple[bytes, bytes]:
     """(raw TBS element, signature bytes) of an X.509 certificate or revocation list."""
     _, start, _ = tlv(der, 0)
     _, _, tbs_end = tlv(der, start)
@@ -184,7 +185,7 @@ def signed_parts(der):
     return der[start:tbs_end], der[bits_start + 1 : bits_end]
 
 
-def subject_key(der):
+def subject_key(der: bytes) -> bytes:
     """The 66-byte subject public key of an Ed521 certificate."""
     _, start, _ = tlv(der, 0)
     _, offset, _ = tlv(der, start)  # tbsCertificate contents
@@ -199,18 +200,18 @@ def subject_key(der):
     return der[key_start + 1 : key_end]
 
 
-def pem_certificates(raw):
+def pem_certificates(raw: bytes) -> list[bytes]:
     bodies = re.findall(rb"-----BEGIN CERTIFICATE-----(.*?)-----END CERTIFICATE-----", raw, re.S)
     return [base64.b64decode(b"".join(body.split())) for body in bodies]
 
 
-def extract(args):
+def extract(args: argparse.Namespace) -> None:
     import asn1tools
 
     sys.path.insert(0, str(ROOT / "tests/python"))
     import reference_ed521 as ref
 
-    def read(name):
+    def read(name: str) -> bytes:
         raw = (SOURCES_DIR / name).read_bytes()
         if sha256(raw) != SOURCES[name][1]:
             raise SystemExit(f"{name}: run `scripts/tse_vectors.py fetch` first")
@@ -218,15 +219,15 @@ def extract(args):
 
     package = zipfile.ZipFile(io.BytesIO(read(PACKAGE)))
 
-    def member(path):
+    def member(path: str) -> str:
         return package.read(path).decode()
 
     signature_codec = asn1tools.compile_string(member("spec/assinatura.asn1"), codec="der")
     bu_codec = asn1tools.compile_string(member("spec/bu.asn1"), codec="ber")
 
-    vectors = []
+    vectors: list[dict[str, object]] = []
 
-    def add(id_, source, key, signature, message, note):
+    def add(id_: str, source: str, key: bytes, signature: bytes, message: bytes, note: str) -> None:
         assert ref.verify(key, signature, message), id_  # the Python reference agrees
         vectors.append(
             {
@@ -240,7 +241,7 @@ def extract(args):
             }
         )
 
-    def urn_certificate(name):
+    def urn_certificate(name: str) -> tuple[dict[str, Any], bytes]:
         entity = signature_codec.decode("EntidadeAssinaturaEcourna", read(name))
         hardware = entity["assinaturaHW"]
         kind, pem = hardware["informacaoChave"]
@@ -339,7 +340,7 @@ def extract(args):
     print(f"wrote {len(vectors)} vectors to {OUTPUT}")
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     commands = parser.add_subparsers(dest="command", required=True)
     fetch_parser = commands.add_parser("fetch", help="download and check the TSE source files")

@@ -13,6 +13,7 @@ import os
 import platform
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 import ed521rs
@@ -22,7 +23,7 @@ sys.path.insert(0, str(ROOT / "tests/python"))
 import reference_ed521 as ref  # noqa: E402
 
 
-def per_call(function, seconds, items=1):
+def per_call(function: Callable[[], object], seconds: float, items: int = 1) -> float:
     """Microseconds per item: the best of three runs of ``seconds / 3`` each."""
     function()
     best = float("inf")
@@ -35,7 +36,7 @@ def per_call(function, seconds, items=1):
     return best * 1e6 / items
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--seconds", type=float, default=2.0)
     parser.add_argument("--no-reference", action="store_true")
@@ -55,7 +56,7 @@ def main(argv=None):
     packed_msgs = b"".join(messages[i % len(messages)] for i in range(big))
     group_sigs, group_msgs = signatures[:12], messages[:12]
 
-    rows = []
+    rows: list[tuple[str, float]] = []
     if not args.no_reference:
         rows.append(("reference ed521.py verify", per_call(lambda: ref.verify(key, sig, msg), 3)))
     rows += [

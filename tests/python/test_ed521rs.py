@@ -31,8 +31,11 @@ REFERENCE_SHA256 = "c5c8e63b6bc702c9a94ddf34b8aea29e22b83d550de739744963c4e79e77
 PARITY_CASES = int(os.environ.get("ED521RS_PARITY_CASES", "200"))
 HAVE_ECPY = importlib.util.find_spec("ecpy") is not None
 
+# id, public key, signature, message
+Vector = tuple[str, bytes, bytes, bytes]
 
-def load(name):
+
+def load(name: str) -> list[Vector]:
     document = json.loads((VECTORS / name).read_text())
     return [
         (
@@ -45,7 +48,7 @@ def load(name):
     ]
 
 
-def ecpy_verify(key, signature, message):
+def ecpy_verify(key: bytes, signature: bytes, message: bytes) -> bool:
     """ECPy's verdict, as TSE's scripts take it (assertion and value errors mean invalid)."""
     from ecpy.curves import Curve
     from ecpy.eddsa import EDDSA
@@ -60,11 +63,11 @@ def ecpy_verify(key, signature, message):
 
 
 class VectorTests(unittest.TestCase):
-    def test_reference_copy_is_pinned(self):
+    def test_reference_copy_is_pinned(self) -> None:
         digest = hashlib.sha256((HERE / "reference_ed521.py").read_bytes()).hexdigest()
         self.assertEqual(digest, REFERENCE_SHA256)
 
-    def test_vectors_verify_in_both_modes(self):
+    def test_vectors_verify_in_both_modes(self) -> None:
         vectors = load("tse-2026.json") + load("ecpy.json")
         self.assertEqual(len(vectors), 20)
         for id_, key, signature, message in vectors:
@@ -74,7 +77,7 @@ class VectorTests(unittest.TestCase):
                 self.assertEqual(ed521rs.reason(key, signature, message), "ok")
                 self.assertTrue(ref.verify(key, signature, message))
 
-    def test_a_changed_file_hash_fails_with_its_reason(self):
+    def test_a_changed_file_hash_fails_with_its_reason(self) -> None:
         _, key, signature, message = load("tse-2026.json")[0]
         changed = bytes([message[0] ^ 1]) + message[1:]
         self.assertFalse(ed521rs.verify(key, signature, changed))
@@ -92,7 +95,7 @@ class VectorTests(unittest.TestCase):
 class EdgeCaseTests(unittest.TestCase):
     """crates/ed521/tests/vectors/edge-cases.json: each mode gives its oracle's verdict."""
 
-    def test_edge_cases(self):
+    def test_edge_cases(self) -> None:
         document = json.loads((VECTORS / "edge-cases.json").read_text())
         for v in document["vectors"]:
             key, signature, message = (bytes.fromhex(v[f]) for f in ("key", "signature", "message"))
@@ -106,11 +109,11 @@ class EdgeCaseTests(unittest.TestCase):
 
 
 class ApiTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.vectors = [v for v in load("tse-2026.json") if v[0].startswith(("urn", "bu"))]
         self.key = ed521rs.VerifyingKey(self.vectors[0][1])
 
-    def test_key_object(self):
+    def test_key_object(self) -> None:
         key_bytes = self.vectors[0][1]
         self.assertEqual(self.key.to_bytes(), key_bytes)
         self.assertEqual(self.key.mode, "strict")
@@ -121,12 +124,12 @@ class ApiTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid_length"):
             ed521rs.VerifyingKey(key_bytes[:65])
         with self.assertRaisesRegex(ValueError, "mode"):
-            ed521rs.VerifyingKey(key_bytes, mode="loose")
+            ed521rs.VerifyingKey(key_bytes, mode="loose")  # ty: ignore[invalid-argument-type]
         non_canonical = b"\xff" * 65 + b"\x01"  # y = p
         with self.assertRaisesRegex(ValueError, "non_canonical_public_key"):
             ed521rs.VerifyingKey(non_canonical)
 
-    def test_precomputed_key(self):
+    def test_precomputed_key(self) -> None:
         key_bytes = self.vectors[0][1]
         for mode in ("strict", "ecpy"):
             precomputed = ed521rs.VerifyingKey(key_bytes, mode=mode, precompute=True)
@@ -141,7 +144,7 @@ class ApiTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "non_canonical_public_key"):
             ed521rs.VerifyingKey(b"\xff" * 65 + b"\x01", precompute=True)
 
-    def test_reason_many_on_edge_cases(self):
+    def test_reason_many_on_edge_cases(self) -> None:
         """Mixed failures through the batched paths, for both key types and both modes."""
         document = json.loads((VECTORS / "edge-cases.json").read_text())
         key = bytes.fromhex(document["vectors"][0]["key"])
@@ -167,7 +170,7 @@ class ApiTests(unittest.TestCase):
                                 k.reason_many(signatures[:n], messages[:n]), expected[:n]
                             )
 
-    def test_batch(self):
+    def test_batch(self) -> None:
         signatures = [v[2] for v in self.vectors]
         messages = [v[3] for v in self.vectors]
         for precompute in (False, True):
@@ -185,7 +188,7 @@ class ApiTests(unittest.TestCase):
         self.assertFalse(ed521rs.verify_batch(triples[:-1] + [(triples[0][0], *triples[-1][1:])]))
         self.assertFalse(ed521rs.verify_batch([(b"\x00" * 65, triples[0][1], triples[0][2])]))
 
-    def test_many_and_packed_agree_with_single_calls(self):
+    def test_many_and_packed_agree_with_single_calls(self) -> None:
         signatures = [v[2] for v in self.vectors]
         messages = [v[3] for v in self.vectors]
         signatures[3] = bytes(132)  # one invalid
@@ -208,7 +211,7 @@ class ApiTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.key.verify_many(signatures, messages, threads=0)
 
-    def test_bytes_like_arguments(self):
+    def test_bytes_like_arguments(self) -> None:
         """bytearray and memoryview work wherever bytes do, as with election_audit.ed521."""
         _, key, signature, message = self.vectors[0]
         for convert in (bytearray, memoryview):
@@ -221,9 +224,9 @@ class ApiTests(unittest.TestCase):
                 self.assertEqual(k.verify_packed(convert(signature), convert(message), 64), [True])
         self.assertTrue(self.key.verify_many([bytearray(signature)], [bytearray(message)])[0])
         with self.assertRaisesRegex(TypeError, "bytes-like"):
-            ed521rs.verify(key, "not bytes", message)
+            ed521rs.verify(key, "not bytes", message)  # ty: ignore[invalid-argument-type]
 
-    def test_metadata(self):
+    def test_metadata(self) -> None:
         self.assertEqual(ed521rs.backend(), ed521rs.backend())
         self.assertIn(ed521rs.backend(), {"serial", "avx2"})
         self.assertRegex(ed521rs.__version__, r"^\d+\.\d+\.\d+")
@@ -233,14 +236,14 @@ class ApiTests(unittest.TestCase):
 class ParityTests(unittest.TestCase):
     """Random signatures from the reference signer; ed521rs, the reference and ECPy must agree."""
 
-    def test_random_signatures_and_mutations(self):
+    def test_random_signatures_and_mutations(self) -> None:
         rng = random.Random(20261106)
         for case in range(PARITY_CASES):
             seed = rng.randbytes(66)
             message = rng.randbytes(rng.choice([0, 1, 64, 200, 569]))
             key = ref.public_key(seed)
             signature = ref.sign(seed, message)
-            candidates = [(signature, message, True)]
+            candidates: list[tuple[bytes, bytes, bool | None]] = [(signature, message, True)]
             mutated = bytearray(signature)
             mutated[rng.randrange(132)] ^= 1 << rng.randrange(8)
             candidates.append((bytes(mutated), message, None))

@@ -13,6 +13,8 @@ import argparse
 import sys
 from pathlib import Path
 
+Point = tuple[int, int]
+
 OUTPUT = Path(__file__).resolve().parent.parent / "crates/ed521/src/tables/generated.rs"
 
 P = 2**521 - 1
@@ -35,7 +37,7 @@ CHUNKS = 4
 ENTRIES = 64
 
 
-def add(p, q):
+def add(p: Point, q: Point) -> Point:
     """Affine Edwards addition (a = 1)."""
     (x1, y1), (x2, y2) = p, q
     t = D * x1 * x2 * y1 * y2 % P
@@ -44,7 +46,7 @@ def add(p, q):
     return x3, y3
 
 
-def multiply(k, p):
+def multiply(k: int, p: Point) -> Point:
     result = (0, 1)
     while k:
         if k & 1:
@@ -54,20 +56,20 @@ def multiply(k, p):
     return result
 
 
-def limbs(value):
+def limbs(value: int) -> list[int]:
     assert 0 <= value < P
     return [(value >> (58 * i)) & ((1 << 58) - 1) for i in range(9)]
 
 
-def words(value, count=9):
+def words(value: int, count: int = 9) -> list[int]:
     return [(value >> (64 * i)) & ((1 << 64) - 1) for i in range(count)]
 
 
-def fe(value):
+def fe(value: int) -> str:
     return "FieldElement([" + ", ".join(f"0x{v:015x}" for v in limbs(value)) + "])"
 
 
-def affine_cached(point):
+def affine_cached(point: Point) -> str:
     x, y = point
     return (
         f"    AffineCached {{\n        x: {fe(x)},\n        y: {fe(y)},\n"
@@ -75,7 +77,7 @@ def affine_cached(point):
     )
 
 
-def render():
+def render() -> str:
     base = (BASE_X, BASE_Y)
     assert (BASE_X**2 + BASE_Y**2 - 1 - D * BASE_X**2 * BASE_Y**2) % P == 0
     assert multiply(L, base) == (0, 1)
@@ -122,7 +124,7 @@ def render():
     return "".join(out)
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
