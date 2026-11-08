@@ -10,6 +10,7 @@
 [![MSRV](https://img.shields.io/crates/msrv/ed521.svg)](https://crates.io/crates/ed521)
 [![docs.rs](https://img.shields.io/docsrs/ed521)](https://docs.rs/ed521)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/tacio/ed521rs/badge)](https://scorecard.dev/viewer/?uri=github.com/tacio/ed521rs)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16442/badge)](https://www.bestpractices.dev/projects/16442)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/tacio/ed521rs/blob/main/LICENSE)
 
 Fast verification of **Ed521** signatures (EdDSA over the Edwards curve E-521, specified by
