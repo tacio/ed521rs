@@ -172,6 +172,10 @@ just bench      # criterion; `python scripts/bench.py` times the Python entry po
 just fuzz 600   # differential fuzzing, 10 minutes per target
 ```
 
+Bug reports and feature requests go to the [issue tracker]; report security problems,
+including any wrong verdict, privately as described in [SECURITY.md]. [CONTRIBUTING.md]
+explains the development setup and what a change needs before it can be merged.
+
 [CHANGELOG.md] lists the changes in each release, and [RELEASING.md] describes how releases are
 published.
 
@@ -187,6 +191,8 @@ published.
 [SECURITY.md]: https://github.com/tacio/ed521rs/blob/main/SECURITY.md
 [BENCHMARKS.md]: https://github.com/tacio/ed521rs/blob/main/BENCHMARKS.md
 [CHANGELOG.md]: https://github.com/tacio/ed521rs/blob/main/CHANGELOG.md
+[CONTRIBUTING.md]: https://github.com/tacio/ed521rs/blob/main/CONTRIBUTING.md
+[issue tracker]: https://github.com/tacio/ed521rs/issues
 [RELEASING.md]: https://github.com/tacio/ed521rs/blob/main/RELEASING.md
 [license]: https://github.com/tacio/ed521rs/blob/main/LICENSE
 [just]: https://github.com/casey/just
