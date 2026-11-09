@@ -108,6 +108,9 @@ class EdgeCaseTests(unittest.TestCase):
                     self.assertEqual(ecpy_verify(key, signature, message), v["ecpy"])
 
 
+SMALL_ORDER_S_IDS = {"s-zero-identity", "s-l-identity", "s-zero-order-2"}
+
+
 class ApiTests(unittest.TestCase):
     def setUp(self) -> None:
         self.vectors = [v for v in load("tse-2026.json") if v[0].startswith(("urn", "bu"))]
@@ -128,6 +131,33 @@ class ApiTests(unittest.TestCase):
         non_canonical = b"\xff" * 65 + b"\x01"  # y = p
         with self.assertRaisesRegex(ValueError, "non_canonical_public_key"):
             ed521rs.VerifyingKey(non_canonical)
+
+    def test_small_order_keys(self) -> None:
+        document = json.loads((VECTORS / "edge-cases.json").read_text())
+        for v in document["vectors"]:
+            expected = (
+                v["id"].startswith(("key-identity", "key-order-")) or v["id"] in SMALL_ORDER_S_IDS
+            )
+            key = bytes.fromhex(v["key"])
+            for mode in ("strict", "ecpy"):
+                with self.subTest(id=v["id"], mode=mode):
+                    try:
+                        decoded = ed521rs.VerifyingKey(key, mode=mode)
+                    except ValueError:
+                        continue
+                    self.assertEqual(decoded.is_small_order(), expected)
+                    if expected:
+                        with self.assertRaisesRegex(ValueError, "small_order_public_key"):
+                            ed521rs.VerifyingKey(key, mode=mode, reject_small_order=True)
+                    else:
+                        ed521rs.VerifyingKey(key, mode=mode, reject_small_order=True)
+        self.assertFalse(self.key.is_small_order())
+        # A = O: one fixed signature (R = B, S = 1) verifies every message, unless rejected.
+        identity = ref.encode((0, 1, 1, 0))
+        forged = ref.encode(ref.BASE) + (1).to_bytes(66, "little")
+        for message in (b"any message", b"another"):
+            for mode in ("strict", "ecpy"):
+                self.assertTrue(ed521rs.verify(identity, forged, message, mode=mode))
 
     def test_precomputed_key(self) -> None:
         key_bytes = self.vectors[0][1]

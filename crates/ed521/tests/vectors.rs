@@ -215,3 +215,32 @@ fn keys_compare_by_encoding_and_mode() {
     };
     assert_ne!(key_of("baseline"), key_of("key-y-plus-p"));
 }
+
+#[test]
+fn small_order_keys_are_flagged_and_rejected_on_request() {
+    let path = format!("{}/tests/vectors/edge-cases.json", env!("CARGO_MANIFEST_DIR"));
+    let document: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    let mut small = 0;
+    for v in document["vectors"].as_array().unwrap() {
+        let id = v["id"].as_str().unwrap();
+        let expected = id.starts_with("key-identity")
+            || id.starts_with("key-order-")
+            || matches!(id, "s-zero-identity" | "s-l-identity" | "s-zero-order-2");
+        let key = hex::decode(v["key"].as_str().unwrap()).unwrap();
+        for mode in [Mode::Strict, Mode::EcpyCompat] {
+            let Ok(key) = VerifyingKey::from_slice(&key, mode) else { continue };
+            assert_eq!(key.is_small_order(), expected, "{id}");
+            assert_eq!(
+                key.reject_small_order().err(),
+                expected.then_some(Error::SmallOrderPublicKey),
+                "{id}"
+            );
+            small += usize::from(expected);
+        }
+    }
+    assert!(small > 0);
+    for v in all() {
+        let key = VerifyingKey::from_slice(&v.key, Mode::Strict).unwrap();
+        assert!(!key.is_small_order());
+    }
+}
