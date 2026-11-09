@@ -1,0 +1,4 @@
+#!/bin/sh
+# Enabled by `just hooks`. Runs the lint step CI runs, so formatting and clippy failures
+# surface before the push. Skip once with `git push --no-verify`.
+exec just lint

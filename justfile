@@ -11,6 +11,10 @@ setup:
     uv venv --python 3.14 .venv
     uv pip install --python {{python}} --group dev --group tse --group oracle
 
+# Run lint before every push (git's pre-push hook, versioned in .githooks).
+hooks:
+    git config core.hooksPath .githooks
+
 fmt:
     cargo fmt --all
     .venv/bin/ruff format scripts tests/python python
@@ -18,6 +22,7 @@ fmt:
 lint:
     cargo fmt --all --check
     cargo clippy --workspace --all-targets --all-features -- -D warnings
+    .venv/bin/ruff format --check scripts tests/python python
     .venv/bin/ruff check scripts tests/python python
     .venv/bin/ty check
 

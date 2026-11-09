@@ -135,7 +135,9 @@ class ApiTests(unittest.TestCase):
     def test_small_order_keys(self) -> None:
         document = json.loads((VECTORS / "edge-cases.json").read_text())
         for v in document["vectors"]:
-            expected = v["id"].startswith(("key-identity", "key-order-")) or v["id"] in SMALL_ORDER_S_IDS
+            expected = (
+                v["id"].startswith(("key-identity", "key-order-")) or v["id"] in SMALL_ORDER_S_IDS
+            )
             key = bytes.fromhex(v["key"])
             for mode in ("strict", "ecpy"):
                 with self.subTest(id=v["id"], mode=mode):

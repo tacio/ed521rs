@@ -13,6 +13,7 @@ You need a stable Rust toolchain, [uv](https://docs.astral.sh/uv/) and
 
 ```sh
 just setup      # .venv with maturin, ruff, ty and the ECPy oracle
+just hooks      # run `just lint` before every push, as CI does
 just check      # everything CI runs: lint, tests, no_std, MSRV, vectors, Python suite
 ```
 
