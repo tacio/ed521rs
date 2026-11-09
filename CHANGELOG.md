@@ -5,6 +5,17 @@ All notable changes are recorded here. The project follows [Semantic Versioning]
 
 ## [Unreleased]
 
+## [0.2.0]
+
+### Rust (`ed521`)
+
+- `VerifyingKey::is_small_order` reports `[4]A = O`, and `VerifyingKey::reject_small_order` fails
+  with the new `Error::SmallOrderPublicKey` (`small_order_public_key`). Verification is unchanged.
+
+### Python (`ed521rs`)
+
+- `VerifyingKey.is_small_order()` and a `reject_small_order=True` constructor option.
+
 ## [0.1.1]
 
 ### Rust (`ed521`)
@@ -42,6 +53,7 @@ First release.
 - abi3 wheels for CPython 3.11 and later (one wheel per platform).
 
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/tacio/ed521rs/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/tacio/ed521rs/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/tacio/ed521rs/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/tacio/ed521rs/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tacio/ed521rs/releases/tag/v0.1.0

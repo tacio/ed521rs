@@ -166,20 +166,28 @@ struct VerifyingKey {
 impl VerifyingKey {
     /// Decode a 66-byte public key; raises `ValueError` (with the reason code) if it is invalid.
     ///
+    /// Neither mode validates the key's order. `reject_small_order=True` raises `ValueError`
+    /// (`small_order_public_key`) for a key with `[4]A = O`, which would verify one fixed
+    /// signature on every message.
+    ///
     /// `precompute=True` builds tables (about 9 KiB, the cost of 1.5 verifications) that make
     /// each later `verify` or `reason` call about twice as fast. `verify_many` and friends use
     /// them for four or more signatures anyway.
     #[new]
-    #[pyo3(signature = (public_key, *, mode = "strict", precompute = false))]
+    #[pyo3(signature = (public_key, *, mode = "strict", precompute = false, reject_small_order = false))]
     fn new(
         py: Python<'_>,
         public_key: BytesLike<'_>,
         mode: &str,
         precompute: bool,
+        reject_small_order: bool,
     ) -> PyResult<Self> {
         let mode = parse_mode(mode)?;
         let verifier = py.detach(|| {
-            let key = Key::from_slice(&public_key, mode)?;
+            let mut key = Key::from_slice(&public_key, mode)?;
+            if reject_small_order {
+                key = key.reject_small_order()?;
+            }
             Ok::<_, Error>(if precompute {
                 Verifier::Precomputed(Box::new(key.precompute()))
             } else {
@@ -198,6 +206,11 @@ impl VerifyingKey {
     #[getter]
     fn mode(&self) -> &'static str {
         mode_name(self.verifier.key().mode())
+    }
+
+    /// True when `[4]A = O`: the key has order 1, 2 or 4.
+    fn is_small_order(&self) -> bool {
+        self.verifier.key().is_small_order()
     }
 
     /// True when the key holds precomputed tables.

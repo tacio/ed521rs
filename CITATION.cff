@@ -12,8 +12,8 @@ authors:
 repository-code: https://github.com/tacio/ed521rs
 url: https://docs.rs/ed521
 license: MIT
-version: 0.1.1
-date-released: 2026-11-08
+version: 0.2.0
+date-released: 2026-11-09
 keywords:
   - ed521
   - eddsa

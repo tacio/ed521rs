@@ -158,6 +158,25 @@ impl VerifyingKey {
         self.mode
     }
 
+    /// Whether `[4]A = O`: the key has order 1, 2 or 4 (E-521 has cofactor 4).
+    ///
+    /// Neither [`Mode`] rejects such keys, since both pin RFC 8032 / ECPy semantics. Under one,
+    /// a single fixed signature verifies for every message, so callers whose keys are not
+    /// otherwise vouched for should check this, or use [`VerifyingKey::reject_small_order`].
+    #[must_use]
+    pub fn is_small_order(&self) -> bool {
+        self.minus_a.double().double().is_identity()
+    }
+
+    /// The key itself, unless it is of small order (see [`VerifyingKey::is_small_order`]).
+    ///
+    /// # Errors
+    ///
+    /// [`Error::SmallOrderPublicKey`].
+    pub fn reject_small_order(self) -> Result<Self, Error> {
+        if self.is_small_order() { Err(Error::SmallOrderPublicKey) } else { Ok(self) }
+    }
+
     /// Verifies `signature` on `message`.
     ///
     /// S is checked before R, so a signature with both a bad S and a bad R reports S.

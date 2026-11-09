@@ -101,6 +101,12 @@ The last two `ecpy` rules reproduce ECPy's arithmetic rather than the equation. 
 dedicated (non-unified) addition, which collapses `[k]A` to that point whenever A has order 1, 2
 or 4. The edge-case vectors pin every rule against both ECPy and the pure-Python reference.
 
+Neither mode validates the public key. Under a small-order key (`[4]A = O`, orders 1, 2 and 4) one
+fixed signature verifies for every message, so callers whose keys are not otherwise vouched for
+should check the key's order: `VerifyingKey.is_small_order()` (Rust: `VerifyingKey::is_small_order`)
+reports it, and `VerifyingKey(key, reject_small_order=True)` (Rust: `reject_small_order()`) refuses
+such a key with `small_order_public_key`. Both are opt-in; the modes themselves are unchanged.
+
 Running both modes and flagging any signature where they differ is a cheap audit check: on real
 data they should never differ.
 

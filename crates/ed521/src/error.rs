@@ -15,6 +15,9 @@ pub enum Error {
     NonCanonicalPublicKey,
     /// No curve point has the public key's y coordinate.
     PublicKeyNotOnCurve,
+    /// The public key has order 1, 2 or 4 (`[4]A = O`). Only reported on request, by
+    /// [`VerifyingKey::reject_small_order`](crate::VerifyingKey::reject_small_order).
+    SmallOrderPublicKey,
     /// The signature's R is not a canonical point encoding. Strict mode only.
     NonCanonicalR,
     /// No curve point has R's y coordinate.
@@ -35,6 +38,7 @@ impl Error {
             Self::InvalidLength => "invalid_length",
             Self::NonCanonicalPublicKey => "non_canonical_public_key",
             Self::PublicKeyNotOnCurve => "public_key_not_on_curve",
+            Self::SmallOrderPublicKey => "small_order_public_key",
             Self::NonCanonicalR => "non_canonical_r",
             Self::RNotOnCurve => "r_not_on_curve",
             Self::SOutOfRange => "s_out_of_range",
@@ -50,6 +54,7 @@ impl fmt::Display for Error {
             Self::InvalidLength => "wrong key, signature or buffer length",
             Self::NonCanonicalPublicKey => "public key is not a canonical point encoding",
             Self::PublicKeyNotOnCurve => "public key is not a curve point",
+            Self::SmallOrderPublicKey => "public key has small order",
             Self::NonCanonicalR => "signature R is not a canonical point encoding",
             Self::RNotOnCurve => "signature R is not a curve point",
             Self::SOutOfRange => "signature S is not below the group order",
