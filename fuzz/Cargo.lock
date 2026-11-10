@@ -61,7 +61,7 @@ dependencies = [
 
 [[package]]
 name = "ed521"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "cpufeatures",
  "shake",
